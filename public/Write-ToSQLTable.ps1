@@ -6,7 +6,13 @@ function Write-ToSQLTable {
 
         .DESCRIPTION
         
-        .PARAMETER
+        .PARAMETER InsertKeys
+        .PARAMETER InsertValues
+        .PARAMETER Table
+        .PARAMETER Schema
+        .PARAMETER Server
+        .PARAMETER Database
+        .PARAMETER Conn
     
         .EXAMPLE
     
@@ -69,12 +75,12 @@ function Write-ToSQLTable {
     $adapter.SelectCommand = $query
     $adapter.fill($ds)
     
-    $ds.tables.Columns.DataType.Name | %{ $tableTypeString += $_ }
-    $InsertValues | %{ $inputTypeString += $_.getType().name }
+    $ds.tables.Columns.DataType.Name | ForEach-Object{ $tableTypeString += $_ }
+    $InsertValues | ForEach-Object{ $inputTypeString += $_.getType().name }
     
     if ($tableTypeString -eq $inputTypeString){
        # FORMAT INSERT KEYS
-       $InsertKeys | % {
+       $InsertKeys | ForEach-Object {
            $KeysFormatted += [string](Convert-ToSQLColumnName $($_))
            if ($_ -ne $InsertKeys[-1]){
                $KeysFormatted += ", "
@@ -82,7 +88,7 @@ function Write-ToSQLTable {
        }
     
        # FORMAT INSERT VALUES
-       $InsertValues | % {
+       $InsertValues | ForEach-Object {
            if ($_.getType().name -eq "String"){
                $ValuesFormatted += [string](Convert-ToSQLString $_)
            } elseif ($_.getType().name -eq "DateTime"){
