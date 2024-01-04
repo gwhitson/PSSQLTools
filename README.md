@@ -1,1 +1,1 @@
-# PSSQLTools
+PowerShell Module designed to implement wrapper functions that use the .NET SQLClient driver in PowerShell. The functions turn the multi-line syntax of the .NET driver into single line calls to Create Tables, Read from Tables, and Write to Tables with the ability build semi-complex queries to get specific data.
