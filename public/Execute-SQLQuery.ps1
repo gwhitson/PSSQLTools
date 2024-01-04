@@ -1,4 +1,15 @@
 ﻿function Execute-SQLQuery {
+    <#
+    
+        .SYNOPSIS
+        
+        .DESCRIPTION
+        
+        .PARAMETER filepath
+    
+        .EXAMPLE
+    
+    #>
     param(
         [Alias("Query")]
         [Parameter(Mandatory=$true, position=0)]

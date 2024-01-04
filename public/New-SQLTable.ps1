@@ -1,4 +1,15 @@
 ﻿function New-SQLTable {
+    <#
+    
+        .SYNOPSIS
+        
+        .DESCRIPTION
+        
+        .PARAMETER filepath
+    
+        .EXAMPLE
+    
+    #>
     param(
         [Parameter(Mandatory=$true, position=0)]
         [String]$database = "",
