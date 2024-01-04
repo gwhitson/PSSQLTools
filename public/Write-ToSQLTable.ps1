@@ -21,10 +21,7 @@ function Write-ToSQLTable {
     param(
         [Parameter(Mandatory, ParameterSetName='CreateConn', position=0)]
         [Parameter(Mandatory, ParameterSetName='PassedConn', position=0)]
-        [Array]$InsertKeys,
-        [Parameter(Mandatory, ParameterSetName='CreateConn', position=1)]
-        [Parameter(Mandatory, ParameterSetName='PassedConn', position=1)]
-        [Array]$InsertValues,
+        [hashtable]$InsertObject,
         [Parameter(ParameterSetName='CreateConn')]
         [Parameter(ParameterSetName='PassedConn')]
         [String]$Table = "master",
@@ -71,14 +68,24 @@ function Write-ToSQLTable {
     
     ############# VERIFY INPUT VALUE TYPES ################################
     
+    <#
+    
+    $ds.tables.Columns.DataType.Name | ForEach-Object{ $tableTypeString += $_ }
+    $InsertValues | ForEach-Object{ $inputTypeString += $_.getType().name }
+    #>
+
     $query.CommandText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
     $adapter.SelectCommand = $query
     $adapter.fill($ds)
     
-    $ds.tables.Columns.DataType.Name | ForEach-Object{ $tableTypeString += $_ }
-    $InsertValues | ForEach-Object{ $inputTypeString += $_.getType().name }
-    
-    if ($tableTypeString -eq $inputTypeString){
+    $InsertObject.Keys | ForEach-Object {
+        if ($_ -notin $ds.Tables.Columns.ColumnName){
+            Write-Error "Key in Insert Object hashtable does not correspond to column of selected table"
+            return $null
+        }
+    }
+
+    #if ($tableTypeString -eq $inputTypeString){
        # FORMAT INSERT KEYS
        $InsertKeys | ForEach-Object {
            $KeysFormatted += [string](Convert-ToSQLColumnName $($_))
@@ -107,9 +114,9 @@ function Write-ToSQLTable {
        write-Verbose $queryText
        $query.CommandText = $queryText
        $query.ExecuteNonQuery()
-    } else {
-        write-error "Bad insert value passed in`ntable: $($tableTypeString)`ninput: $($inputTypeString)"
-    }
+    #} else {
+    #    write-error "Bad insert value passed in`ntable: $($tableTypeString)`ninput: $($inputTypeString)"
+    #}
     
     if ($PSCmdlet.ParameterSetName -eq "CreateConn"){
         $conn.close()
