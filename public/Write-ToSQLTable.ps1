@@ -34,56 +34,60 @@ function Write-ToSQLTable {
         [Parameter(Mandatory, ParameterSetName='CreateConn', position=3)]
         [String]$Server,
         [Parameter(Mandatory, ParameterSetName='PassedConn', position=3)]
-        [System.Data.SqlClient.SqlConnection]$Conn = $null
+        [System.Data.SqlClient.SqlConnection]$Connection = $null
     )
 
-    ############# INITIALIZE OBJECTS ######################################
-    if ($PSCmdlet.ParameterSetName -eq "CreateConn"){
-        $conn = New-Object System.Data.SqlClient.SqlConnection
-        $conn.ConnectionString = "Server = $($server); Database = $($database); Integrated Security = True"
-        try{
-            $conn.open()
-        } catch [System.Data.SqlClient.SqlException]{
-            write-error "database not accessible to user account"
-            return $null
+    begin{
+        if ($PSCmdlet.ParameterSetName -eq "CreateConn"){
+            $conn = New-Object System.Data.SqlClient.SqlConnection
+                $conn.ConnectionString = "Server = $($server); Database = $($database); Integrated Security = True"
+                try{
+                    $conn.open()
+                } catch [System.Data.SqlClient.SqlException]{
+                    write-error "database not accessible to user account"
+                        return $null
+                }
+        } else {
+            $passedConnState = $conn.State
+                if ($passedConnState -eq "Closed"){
+                    $conn.Open()
+                }
         }
-    } else {
-        $passedConnState = $conn.State
-        if ($passedConnState -eq "Closed"){
-            $conn.Open()
-        }
-    }
-    
-    $query = New-Object System.Data.SqlClient.SqlCommand
-    $query.connection = $conn
-    
-    $adapter = New-Object System.Data.SqlClient.SqlDataAdapter
-    $ds = New-Object System.Data.DataSet
-    
-    $tableTypeString = ""
-    $inputTypeString = ""
-    
-    $KeysFormatted = ""
-    $ValuesFormatted = ""
-    
-    ############# VERIFY INPUT VALUE TYPES ################################
-    
-    <#
-    
-    $ds.tables.Columns.DataType.Name | ForEach-Object{ $tableTypeString += $_ }
-    $InsertValues | ForEach-Object{ $inputTypeString += $_.getType().name }
-    #>
 
-    $query.CommandText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
-    $adapter.SelectCommand = $query
-    $adapter.fill($ds)
-    
-    $InsertObject.Keys | ForEach-Object {
-        if ($_ -notin $ds.Tables.Columns.ColumnName){
-            Write-Error "Key in Insert Object hashtable does not correspond to column of selected table"
-            return $null
-        }
+        $query = New-Object System.Data.SqlClient.SqlCommand
+            $query.connection = $conn
+
+            $adapter = New-Object System.Data.SqlClient.SqlDataAdapter
+            $ds = New-Object System.Data.DataSet
+
+            $tableTypeString = ""
+            $inputTypeString = ""
+
+            $KeysFormatted = ""
+            $ValuesFormatted = ""
+
+            $query.CommandText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
+            $adapter.SelectCommand = $query
+            $adapter.fill($ds)
+
+            $tableTypes = @{}
+            $ds.Tables.Columns | ForEach-Object {
+                $tableTypes[$($_.ColumnName)] = $_.DataType.Name
+            }
+
+            $InsertObject.Keys | ForEach-Object {
+                if ($_ -notin $ds.Tables.Columns.ColumnName){
+                    Write-Error "Key in Insert Object hashtable does not correspond to column of selected table"
+                    return $null
+                }
+                if ($InsertObject[$_].GetType().Name -ne $tableTypes[$_]){
+                    Write-Error "Invalid type in InsertObject hashmap: $($_)"
+                    return $null
+                }
+            }
     }
+
+
 
     #if ($tableTypeString -eq $inputTypeString){
        # FORMAT INSERT KEYS
