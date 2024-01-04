@@ -55,79 +55,63 @@ function Write-ToSQLTable {
         }
 
         $query = New-Object System.Data.SqlClient.SqlCommand
-            $query.connection = $conn
+        $query.connection = $conn
 
-            $adapter = New-Object System.Data.SqlClient.SqlDataAdapter
-            $ds = New-Object System.Data.DataSet
+        $adapter = New-Object System.Data.SqlClient.SqlDataAdapter
+        $ds = New-Object System.Data.DataSet
 
-            $tableTypeString = ""
-            $inputTypeString = ""
+        $query.CommandText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
+        $adapter.SelectCommand = $query
+        $adapter.fill($ds)
 
-            $KeysFormatted = ""
-            $ValuesFormatted = ""
+        $tableTypes = @{}
+        $ds.Tables.Columns | ForEach-Object {
+            $tableTypes[$($_.ColumnName)] = $_.DataType.Name
+        }
 
-            $query.CommandText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
-            $adapter.SelectCommand = $query
-            $adapter.fill($ds)
+        $InsertObject.Keys | ForEach-Object {
+            if ($_ -notin $ds.Tables.Columns.ColumnName){
+                Write-Error "Key in Insert Object hashtable does not correspond to column of selected table"
+                return $null
+            }
+            if ($InsertObject[$_].GetType().Name -ne $tableTypes[$_]){
+                Write-Error "Invalid type in InsertObject hashmap: $($_)"
+                return $null
+            }
+        }
+    } process {
+        $KeysFormatted = ""
+        $ValuesFormatted = ""
+        
+        $InsertObject.Keys | ForEach-Object {
+            $KeysFormatted += "[$(Convert-ToSQLColumnName $($_))]"
 
-            $tableTypes = @{}
-            $ds.Tables.Columns | ForEach-Object {
-                $tableTypes[$($_.ColumnName)] = $_.DataType.Name
+            if ($tableTypes[$_] -eq "String"){
+                $ValuesFormatted += [string](Convert-ToSQLString $_)
+            } elseif ($tableTypes[$_] -eq "DateTime"){
+                $ValuesFormatted += [string](Convert-ToSQLDateTime $_)
+            } else {
+                $ValuesFormatted += $_.toString()
             }
 
-            $InsertObject.Keys | ForEach-Object {
-                if ($_ -notin $ds.Tables.Columns.ColumnName){
-                    Write-Error "Key in Insert Object hashtable does not correspond to column of selected table"
-                    return $null
-                }
-                if ($InsertObject[$_].GetType().Name -ne $tableTypes[$_]){
-                    Write-Error "Invalid type in InsertObject hashmap: $($_)"
-                    return $null
-                }
+            if ($_ -ne $InsertObject.Keys[-1]){
+                $ValuesFormatted += ", "
+                $KeysFormatted += ", "
             }
-    }
+        }
 
-
-
-    #if ($tableTypeString -eq $inputTypeString){
-       # FORMAT INSERT KEYS
-       $InsertKeys | ForEach-Object {
-           $KeysFormatted += [string](Convert-ToSQLColumnName $($_))
-           if ($_ -ne $InsertKeys[-1]){
-               $KeysFormatted += ", "
-           }
-       }
-    
-       # FORMAT INSERT VALUES
-       $InsertValues | ForEach-Object {
-           if ($_.getType().name -eq "String"){
-               $ValuesFormatted += [string](Convert-ToSQLString $_)
-           } elseif ($_.getType().name -eq "DateTime"){
-               $ValuesFormatted += [string](Convert-ToSQLDateTime $_)
-           } else {
-               $ValuesFormatted += [string]($_.toString())
-           }
-           
-           if ($_ -ne $InsertValues[-1]){
-               $ValuesFormatted += ", "
-           }
-       }
-    
-       # BUILD/EXECUTE QUERY
-       $queryText = "INSERT INTO [$($database)].[$($schema)].[$($table)] ($($KeysFormatted)) VALUES ($($ValuesFormatted));"
-       write-Verbose $queryText
-       $query.CommandText = $queryText
-       $query.ExecuteNonQuery()
-    #} else {
-    #    write-error "Bad insert value passed in`ntable: $($tableTypeString)`ninput: $($inputTypeString)"
-    #}
-    
-    if ($PSCmdlet.ParameterSetName -eq "CreateConn"){
-        $conn.close()
-    } else {
-        # if passed a connection, ensure that it remains in the state it was in when passed
-        if ($passedConnState -ne "Closed"){
+        $queryText = "INSERT INTO [$($database)].[$($schema)].[$($table)] ($($KeysFormatted)) VALUES ($($ValuesFormatted));"
+        write-Verbose $queryText
+        $query.CommandText = $queryText
+        $query.ExecuteNonQuery()
+    } end {
+        if ($PSCmdlet.ParameterSetName -eq "CreateConn"){
             $conn.close()
+        } else {
+            # if passed a connection, ensure that it remains in the state it was in when passed
+            if ($passedConnState -ne "Closed"){
+                $conn.close()
+            }
         }
     }
 }
