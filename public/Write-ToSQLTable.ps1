@@ -82,6 +82,7 @@ function Write-ToSQLTable {
     } process {
         $KeysFormatted = ""
         $ValuesFormatted = ""
+        $counter = 0
         
         $InsertObject.Keys | ForEach-Object {
             $KeysFormatted += "[$(Convert-ToSQLColumnName $($_))]"
@@ -94,7 +95,9 @@ function Write-ToSQLTable {
                 $ValuesFormatted += $_.toString()
             }
 
-            if ($_ -ne $InsertObject.Keys[-1]){
+            $counter += 1
+
+            if ($counter -lt $InsertObject.Count){
                 $ValuesFormatted += ", "
                 $KeysFormatted += ", "
             }
