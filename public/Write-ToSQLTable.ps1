@@ -148,7 +148,6 @@ function Write-ToSQLTable {
         if ($PSCmdlet.ParameterSetName -eq "CreateConn"){
             $conn.close()
         } else {
-            # if passed a connection, ensure that it remains in the state it was in when passed
             if ($passedConnState -ne "Closed"){
                 $conn.close()
             }
