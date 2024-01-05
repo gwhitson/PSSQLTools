@@ -10,7 +10,26 @@
         .EXAMPLE
     
     #>
+    [CmdletBinding(DefaultParameterSetName = 'CreateConn')]
     param(
+        [Parameter(Mandatory, ParameterSetName='CreateConn', position=0, ValueFromPipeline)]
+        [Parameter(Mandatory, ParameterSetName='PassedConn', position=0, ValueFromPipeline)]
+        [hashtable]$InsertObject,
+        [Parameter(ParameterSetName='CreateConn')]
+        [Parameter(ParameterSetName='PassedConn')]
+        [String]$Table = "master",
+        [Parameter(ParameterSetName='CreateConn')]
+        [Parameter(ParameterSetName='PassedConn')]
+        [String]$Schema = "dbo",
+        [Parameter(Mandatory, ParameterSetName='CreateConn', position=2)]
+        [Parameter(Mandatory, ParameterSetName='PassedConn', position=2)]
+        [String]$Database,
+        [Parameter(Mandatory, ParameterSetName='CreateConn', position=3)]
+        [String]$Server,
+        [Parameter(Mandatory, ParameterSetName='PassedConn', position=3)]
+        [System.Data.SqlClient.SqlConnection]$Connection = $null
+    )
+    <#param(
         [Parameter(Mandatory=$true, position=0)]
         [String]$database = "",
         [Parameter(Mandatory=$true, position=1)]
@@ -23,7 +42,7 @@
         [String]$schema = "dbo",
         [Parameter(Mandatory=$false, ValueFromPipeline)]
         [System.Data.SqlClient.SqlConnection]$conn = $null
-    )
+    )#>
 
     ############# INITIALIZE OBJECTS ######################################
     if ($conn -eq $null){
