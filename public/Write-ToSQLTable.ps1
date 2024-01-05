@@ -19,8 +19,8 @@ function Write-ToSQLTable {
     #>
     [CmdletBinding(DefaultParameterSetName = 'CreateConn')]
     param(
-        [Parameter(Mandatory, ParameterSetName='CreateConn', position=0)]
-        [Parameter(Mandatory, ParameterSetName='PassedConn', position=0)]
+        [Parameter(Mandatory, ParameterSetName='CreateConn', position=0, ValueFromPipeline)]
+        [Parameter(Mandatory, ParameterSetName='PassedConn', position=0, ValueFromPipeline)]
         [hashtable]$InsertObject,
         [Parameter(ParameterSetName='CreateConn')]
         [Parameter(ParameterSetName='PassedConn')]
