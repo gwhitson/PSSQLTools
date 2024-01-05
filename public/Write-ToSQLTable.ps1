@@ -71,12 +71,10 @@ function Write-ToSQLTable {
 
         $InsertObject.Keys | ForEach-Object {
             if ($_ -notin $ds.Tables.Columns.ColumnName){
-                Write-Error "Key in Insert Object hashtable does not correspond to column of selected table"
-                return $null
+                Throw "Key in Insert Object hashtable does not correspond to column of selected table"
             }
             if ($InsertObject[$_].GetType().Name -ne $tableTypes[$_]){
-                Write-Error "Invalid type in InsertObject hashmap: $($_)"
-                return $null
+                Throw "Invalid type in InsertObject hashmap: $($_)"
             }
         }
     } process {
@@ -85,14 +83,14 @@ function Write-ToSQLTable {
         $counter = 0
         
         $InsertObject.Keys | ForEach-Object {
-            $KeysFormatted += "[$(Convert-ToSQLColumnName $($_))]"
+            $KeysFormatted += (Convert-ToSQLColumnName $($_))
 
             if ($tableTypes[$_] -eq "String"){
-                $ValuesFormatted += [string](Convert-ToSQLString $_)
+                $ValuesFormatted += [string](Convert-ToSQLString $($InsertObject[$_]))
             } elseif ($tableTypes[$_] -eq "DateTime"){
-                $ValuesFormatted += [string](Convert-ToSQLDateTime $_)
+                $ValuesFormatted += [string](Convert-ToSQLDateTime $($InsertObject[$_]))
             } else {
-                $ValuesFormatted += $_.toString()
+                $ValuesFormatted += ($InsertObject[$_]).toString()
             }
 
             $counter += 1
