@@ -122,12 +122,12 @@ function Write-ToSQLTable {
         $counter = 0
         
         $InsertObject.Keys | ForEach-Object {
-            $KeysFormatted += (Convert-ToSQLColumnName $($_))
+            $KeysFormatted += (ConvertTo-SQLColumnName $($_))
 
             if ($tableTypes[$_] -eq "String"){
-                $ValuesFormatted += [string](Convert-ToSQLString $($InsertObject[$_]))
+                $ValuesFormatted += [string](ConvertTo-SQLString $($InsertObject[$_]))
             } elseif ($tableTypes[$_] -eq "DateTime"){
-                $ValuesFormatted += [string](Convert-ToSQLDateTime $($InsertObject[$_]))
+                $ValuesFormatted += [string](ConvertTo-SQLDateTime $($InsertObject[$_]))
             } else {
                 $ValuesFormatted += ($InsertObject[$_]).toString()
             }

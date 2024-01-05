@@ -49,7 +49,7 @@
     $count = 1
     $columnsFormatted = "("
     $columns.Keys | %{
-        $columnsFormatted += ((Convert-ToSQLColumnName $_) + " " + $columns[$_])
+        $columnsFormatted += ((ConvertTo-SQLColumnName $_) + " " + $columns[$_])
         if ($count -ne $columns.count){
             $columnsFormatted += ", "
         }

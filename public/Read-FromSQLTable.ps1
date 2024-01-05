@@ -67,7 +67,7 @@ function Read-FromSQLTable {
         $ValuesFormatted = "*"
     } else {
         $values | % {
-            $ValuesFormatted += Convert-ToSQLColumnName $_
+            $ValuesFormatted += ConvertTo-SQLColumnName $_
             if ($_ -ne $values[-1]){
                 $ValuesFormatted += ", "
             }
