@@ -59,7 +59,7 @@ function Read-FromSQLTable {
     )
 
     begin{
-        if ($PSCmdlet.ParameterSetName -eq "CreateConn"){
+        if ($PSCmdlet.ParameterSetName -eq "CreateConnAll" -or $PSCmdlet.ParameterSetName -eq "CreateConnSome"){
             $conn = New-Object System.Data.SqlClient.SqlConnection
                 $conn.ConnectionString = "Server = $($server); Database = $($database); Integrated Security = True"
                 try{
@@ -81,29 +81,38 @@ function Read-FromSQLTable {
         $adapter = New-Object System.Data.SqlClient.SqlDataAdapter
         $ds = New-Object System.Data.DataSet
 
-        $query.CommandText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
-        $adapter.SelectCommand = $query
-        $adapter.fill($ds)
-
-        $SearchObject.Keys | ForEach-Object {
-            if ($_ -notin $ds.Tables.Columns.ColumnName){
-                Throw "Key in Search Object hashtable does not correspond to column of selected table"
-                return 0;
+        if ($PSCmdlet.ParameterSetName -eq "CreateConnAll" -or $PSCmdlet.ParameterSetName -eq "PassedConnAll"){
+            $query.CommandText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
+            $adapter.SelectCommand = $query
+            $adapter.fill($ds)
+        } else {
+            $SearchObject.Keys | ForEach-Object {
+                if ($_ -notin $ds.Tables.Columns.ColumnName){
+                    Throw "Key in Search Object hashtable does not correspond to column of selected table"
+                    return 0;
+                }
             }
         }
+
     } process {
         $queryText = ""
+        $queryOptions = ""
         $KeysFormatted = ""
         $counter = 0
         
-        $SearchObject.Keys | ForEach-Object {
-            $KeysFormatted += (ConvertTo-SQLColumnName $($_))
-            $counter += 1
+        if ($PSCmdlet.ParameterSetName -eq "CreateConnAll" -or $PSCmdlet.ParameterSetName -eq "PassedConnAll"){
+            $KeysFormatted = "*"
+        } else {
+            $SearchObject.Keys | ForEach-Object {
+                $KeysFormatted += (ConvertTo-SQLColumnName $($_))
+                    $counter += 1
 
-            if ($counter -lt $SearchObject.Count){
-                $KeysFormatted += ", "
+                    if ($counter -lt $SearchObject.Count){
+                        $KeysFormatted += ", "
+                    }
             }
         }
+
 
         $queryText = "SELECT "
 
@@ -138,7 +147,7 @@ function Read-FromSQLTable {
 
         $queryText += ";"
 
-            write-Verbose $queryText
+        write-Verbose $queryText
     } end {
         if ($PSCmdlet.ParameterSetName -eq "CreateConn"){
             $conn.close()
