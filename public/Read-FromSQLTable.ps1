@@ -17,7 +17,7 @@ function Read-FromSQLTable {
     param(
         [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=0)]
         [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=0)]
-        [hashtable]$SearchObject,
+        [Array]$SelectKeys,
         [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=0)]
         [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=0)]
         [switch]$SelectAll,
@@ -82,7 +82,7 @@ function Read-FromSQLTable {
         $ds = New-Object System.Data.DataSet
 
         if ($PSCmdlet.ParameterSetName -eq "CreateConnSome" -or $PSCmdlet.ParameterSetName -eq "PassedConnSome"){
-            $SearchObject.Keys | ForEach-Object {
+            $SearchObject | ForEach-Object {
                 if ($_ -notin $ds.Tables.Columns.ColumnName){
                     Throw "Key in Search Object hashtable does not correspond to column of selected table"
                     return 0;
@@ -98,7 +98,7 @@ function Read-FromSQLTable {
         if ($PSCmdlet.ParameterSetName -eq "CreateConnAll" -or $PSCmdlet.ParameterSetName -eq "PassedConnAll"){
             $KeysFormatted = "*"
         } else {
-            $SearchObject.Keys | ForEach-Object {
+            $SearchObject | ForEach-Object {
                 $KeysFormatted += (ConvertTo-SQLColumnName $($_))
                     $counter += 1
 
