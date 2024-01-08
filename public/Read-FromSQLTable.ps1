@@ -13,34 +13,48 @@ function Read-FromSQLTable {
         .PARAMETER Conn
         .EXAMPLE
     #>
-    [CmdletBinding(DefaultParameterSetName = 'CreateConn','SelectAll')]
+    [CmdletBinding(DefaultParameterSetName = 'CreateConnAll')]
     param(
-        [Parameter(Mandatory, ParameterSetName='SelectSome', position=0, ValueFromPipeline)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=0)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=0)]
         [hashtable]$SearchObject,
-        [Parameter(Mandatory, ParameterSetName='SelectAll', position=0)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=0)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=0)]
         [switch]$SelectAll,
-        [Parameter(ParameterSetName="SelectSome", HelpMessage="Default Value is `'TOP`'")]
+        [Parameter(ParameterSetName='CreateConnSome')]
+        [Parameter(ParameterSetName='PassedConnSome')]
         [ValidateSet("TOP", "DISTINCT")]
         [String]$SelectModifier = "TOP",
-        [Parameter(ParameterSetName="SelectSome", HelpMessage="Default Value is `'DESCENDING`'")]
+        [Parameter(ParameterSetName='CreateConnSome')]
+        [Parameter(ParameterSetName='PassedConnSome')]
         [ValidateSet("ASCENDING", "DESCENDING")]
         [String]$Order = "DESCENDING",
-        [Parameter(ParameterSetName="SelectSome", HelpMessage="Default Value is first key in Search Object")]
+        [Parameter(ParameterSetName='CreateConnSome')]
+        [Parameter(ParameterSetName='PassedConnSome')]
         [String]$OrderBy = $($SearchObject.keys)[0],
-        [Parameter(ParameterSetName="SelectSome", HelpMessage="Default Value is 1")]
+        [Parameter(ParameterSetName='CreateConnSome')]
+        [Parameter(ParameterSetName='PassedConnSome')]
         [String]$NumRows = "1",
-        [Parameter(ParameterSetName='CreateConn')]
-        [Parameter(ParameterSetName='PassedConn')]
+        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=1)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=1)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=1)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=1)]
         [String]$Table = "master",
-        [Parameter(ParameterSetName='CreateConn')]
-        [Parameter(ParameterSetName='PassedConn')]
+        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=2)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=2)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=2)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=2)]
         [String]$Schema = "dbo",
-        [Parameter(Mandatory, ParameterSetName='CreateConn', position=2)]
-        [Parameter(Mandatory, ParameterSetName='PassedConn', position=2)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=3)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=3)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=3)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=3)]
         [String]$Database,
-        [Parameter(Mandatory, ParameterSetName='CreateConn', position=3)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=4)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=4)]
         [String]$Server,
-        [Parameter(Mandatory, ParameterSetName='PassedConn', position=3)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=4)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=4)]
         [System.Data.SqlClient.SqlConnection]$Connection = $null
     )
 
