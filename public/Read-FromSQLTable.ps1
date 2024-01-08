@@ -62,13 +62,17 @@ function Read-FromSQLTable {
         [Parameter(ParameterSetName='CreateConnSome')]
         [Parameter(ParameterSetName='PassedConnSome')]
         [String]$NumRows = "1",
-        [Parameter(ParameterSetName='CreateConnSome')]
-        [Parameter(ParameterSetName='PassedConnSome')]
+        [Parameter(ParameterSetName='CreateConnSomeOrder')]
+        [Parameter(ParameterSetName='PassedConnSomeOrder')]
+        [Parameter(ParameterSetName='CreateConnAllOrder')]
+        [Parameter(ParameterSetName='PassedConnAllOrder')]
         [ValidateSet("ASCENDING", "DESCENDING")]
         [String]$Order = "DESCENDING",
-        [Parameter(ParameterSetName='CreateConnSome')]
-        [Parameter(ParameterSetName='PassedConnSome')]
-        [String]$OrderBy = $null,
+        [Parameter(ParameterSetName='CreateConnSomeOrder')]
+        [Parameter(ParameterSetName='PassedConnSomeOrder')]
+        [Parameter(ParameterSetName='CreateConnAllOrder')]
+        [Parameter(ParameterSetName='PassedConnAllOrder')]
+        [String]$OrderBy = "",
         [Parameter(ParameterSetName='CreateConnAll')]
         [Parameter(ParameterSetName='PassedConnAll')]
         [Parameter(ParameterSetName='CreateConnSome')]
@@ -153,14 +157,17 @@ function Read-FromSQLTable {
             if ($SelectModifier -eq "TOP") {
                 $queryText += " ($($NumRows))"
             }
-            $queryText += " $($KeysFormatted) FROM [$($Database)].[$($Schema)].[$($Table)] ORDER BY $(ConvertTo-SQLColumnName $OrderBy) "
+            $queryText += " $($KeysFormatted) FROM [$($Database)].[$($Schema)].[$($Table)]"
+        } else {
+            $queryText = "SELECT * FROM [$($database)].[$($schema)].[$($table)]"
+        }
+        if ($PSCmdlet.ParameterSetName -like "*Order*"){
+            $queryText += " ORDER BY $(ConverTO-SQLColumnName $OrderBy) "
             if ($Order -eq "ASCENDING"){
                 $queryText += "ASC;"
             } else {
                 $queryText += "DESC;"
             }
-        } else {
-            $queryText = "SELECT * FROM [$($database)].[$($schema)].[$($table)]"
         }
 
         write-Verbose $queryText
