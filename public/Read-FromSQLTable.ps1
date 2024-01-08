@@ -15,11 +15,11 @@ function Read-FromSQLTable {
     #>
     [CmdletBinding(DefaultParameterSetName = 'CreateConnAll')]
     param(
-        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=0)]
-        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=0)]
-        [hashtable]$SearchObject,
         [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=0)]
         [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=0)]
+        [hashtable]$SearchObject,
+        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=0)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=0)]
         [switch]$SelectAll,
         [Parameter(ParameterSetName='CreateConnSome')]
         [Parameter(ParameterSetName='PassedConnSome')]
@@ -31,7 +31,7 @@ function Read-FromSQLTable {
         [String]$Order = "DESCENDING",
         [Parameter(ParameterSetName='CreateConnSome')]
         [Parameter(ParameterSetName='PassedConnSome')]
-        [String]$OrderBy = $($SearchObject.keys)[0],
+        [String]$OrderBy,
         [Parameter(ParameterSetName='CreateConnSome')]
         [Parameter(ParameterSetName='PassedConnSome')]
         [String]$NumRows = "1",
@@ -148,49 +148,4 @@ function Read-FromSQLTable {
             }
         }
     }
-}
-function Read-FromSQLTable {
-
-    $queryText = "SELECT "
-
-    if ($SelectModifier -eq "TOP" -or $SelectModifier -eq "DISTINCT"){
-        $queryText += ("$SelectModifier ($NumRows) ")
-    } else {
-        if ($NumRows -gt 0){
-            $queryText += ("TOP ($NumRows) ")
-        }
-    }
-    
-    $queryText += [String]($ValuesFormatted + " FROM [$database].[$schema].[$table]")
-
-    if ($Order -in @("ASCENDING", "DESCENDING")){
-        $queryText += " ORDER BY "
-        if ($OrderBy -in $values -or $values -eq @('*')){
-            if ($OrderBy -eq ""){
-                Write-Error "Must Specify value to order by"
-                break
-            }
-            $queryText += $OrderBy
-            if ($Order -eq "ASCENDING"){
-                $queryText += " ASC"
-            } else {
-                $queryText += " DESC"
-            }
-        } else {
-            write-error "Key to order by must be included in keys to select"
-            break
-        }
-    }
-    
-    $queryText += ";"
-
-    $query.CommandText = $queryText
-    Write-Verbose $queryText
-
-    $adapter.SelectCommand = $query
-    $adapter.fill($ds)
-    
-    $conn.close()
-
-    return $ds.tables
 }
