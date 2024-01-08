@@ -35,26 +35,26 @@ function Read-FromSQLTable {
         [Parameter(ParameterSetName='CreateConnSome')]
         [Parameter(ParameterSetName='PassedConnSome')]
         [String]$NumRows = "1",
+        [Parameter(ParameterSetName='CreateConnAll')]
+        [Parameter(ParameterSetName='PassedConnAll')]
+        [Parameter(ParameterSetName='CreateConnSome')]
+        [Parameter(ParameterSetName='PassedConnSome')]
+        [String]$Table = "master",
+        [Parameter(ParameterSetName='CreateConnAll')]
+        [Parameter(ParameterSetName='PassedConnAll')]
+        [Parameter(ParameterSetName='CreateConnSome')]
+        [Parameter(ParameterSetName='PassedConnSome')]
+        [String]$Schema = "dbo",
         [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=1)]
         [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=1)]
         [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=1)]
         [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=1)]
-        [String]$Table = "master",
-        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=2)]
-        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=2)]
-        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=2)]
-        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=2)]
-        [String]$Schema = "dbo",
-        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=3)]
-        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=3)]
-        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=3)]
-        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=3)]
         [String]$Database,
-        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=4)]
-        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=4)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnAll', position=2)]
+        [Parameter(Mandatory, ParameterSetName='CreateConnSome', position=2)]
         [String]$Server,
-        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=4)]
-        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=4)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnAll', position=2)]
+        [Parameter(Mandatory, ParameterSetName='PassedConnSome', position=2)]
         [System.Data.SqlClient.SqlConnection]$Connection = $null
     )
 
