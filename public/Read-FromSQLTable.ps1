@@ -81,11 +81,7 @@ function Read-FromSQLTable {
         $adapter = New-Object System.Data.SqlClient.SqlDataAdapter
         $ds = New-Object System.Data.DataSet
 
-        if ($PSCmdlet.ParameterSetName -eq "CreateConnAll" -or $PSCmdlet.ParameterSetName -eq "PassedConnAll"){
-            $query.CommandText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
-            $adapter.SelectCommand = $query
-            $adapter.fill($ds)
-        } else {
+        if ($PSCmdlet.ParameterSetName -eq "CreateConnSome" -or $PSCmdlet.ParameterSetName -eq "PassedConnSome"){
             $SearchObject.Keys | ForEach-Object {
                 if ($_ -notin $ds.Tables.Columns.ColumnName){
                     Throw "Key in Search Object hashtable does not correspond to column of selected table"
@@ -96,7 +92,6 @@ function Read-FromSQLTable {
 
     } process {
         $queryText = ""
-        $queryOptions = ""
         $KeysFormatted = ""
         $counter = 0
         
@@ -113,39 +108,15 @@ function Read-FromSQLTable {
             }
         }
 
-
-        $queryText = "SELECT "
-
-            if ($SelectModifier -eq "TOP" -or $SelectModifier -eq "DISTINCT"){
-                $queryText += ("$SelectModifier ($NumRows) ")
-            } else {
-                if ($NumRows -gt 0){
-                    $queryText += ("TOP ($NumRows) ")
-                }
+        if ($PSCmdlet.ParameterSetName -eq "CreateConnSome" -or $PSCmdlet.ParameterSetName -eq "PassedConnSome"){
+            $queryText = "SELECT $($SelectModifier)" 
+            if ($SelectModifier -eq "TOP") {
+                $queryText += " ($($NumRows)) "
             }
-
-        $queryText += [String]($ValuesFormatted + " FROM [$database].[$schema].[$table]")
-
-            if ($Order -in @("ASCENDING", "DESCENDING")){
-                $queryText += " ORDER BY "
-                    if ($OrderBy -in $values -or $values -eq @('*')){
-                        if ($OrderBy -eq ""){
-                            Write-Error "Must Specify value to order by"
-                                break
-                        }
-                        $queryText += $OrderBy
-                            if ($Order -eq "ASCENDING"){
-                                $queryText += " ASC"
-                            } else {
-                                $queryText += " DESC"
-                            }
-                    } else {
-                        write-error "Key to order by must be included in keys to select"
-                            break
-                    }
-            }
-
-        $queryText += ";"
+            $queryText += " $($KeysFormatted) FROM [$($Database)].[$($Schema)].[$($Table)];"
+        } else {
+            $queryText = "SELECT * FROM [$($database)].[$($schema)].[$($table)];"
+        }
 
         write-Verbose $queryText
     } end {
