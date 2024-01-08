@@ -13,7 +13,7 @@ function Read-FromSQLTable {
         .PARAMETER Conn
         .EXAMPLE
     #>
-    [CmdletBinding(DefaultParameterSetName = 'CreateConn','SelectAll')]
+    [CmdletBinding(DefaultParameterSetName = 'CreateConn')]
     param(
         [Parameter(Mandatory, ParameterSetName='SelectSome', position=0, ValueFromPipeline)]
         [hashtable]$SearchObject,
@@ -134,49 +134,4 @@ function Read-FromSQLTable {
             }
         }
     }
-}
-function Read-FromSQLTable {
-
-    $queryText = "SELECT "
-
-    if ($SelectModifier -eq "TOP" -or $SelectModifier -eq "DISTINCT"){
-        $queryText += ("$SelectModifier ($NumRows) ")
-    } else {
-        if ($NumRows -gt 0){
-            $queryText += ("TOP ($NumRows) ")
-        }
-    }
-    
-    $queryText += [String]($ValuesFormatted + " FROM [$database].[$schema].[$table]")
-
-    if ($Order -in @("ASCENDING", "DESCENDING")){
-        $queryText += " ORDER BY "
-        if ($OrderBy -in $values -or $values -eq @('*')){
-            if ($OrderBy -eq ""){
-                Write-Error "Must Specify value to order by"
-                break
-            }
-            $queryText += $OrderBy
-            if ($Order -eq "ASCENDING"){
-                $queryText += " ASC"
-            } else {
-                $queryText += " DESC"
-            }
-        } else {
-            write-error "Key to order by must be included in keys to select"
-            break
-        }
-    }
-    
-    $queryText += ";"
-
-    $query.CommandText = $queryText
-    Write-Verbose $queryText
-
-    $adapter.SelectCommand = $query
-    $adapter.fill($ds)
-    
-    $conn.close()
-
-    return $ds.tables
 }
